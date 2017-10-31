@@ -3,7 +3,7 @@ package com.apkupdater.updater;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import android.content.Context;
-
+import android.widget.Toast;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -15,7 +15,7 @@ public class UpdaterAPKPure
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	static final private String BaseUrl = "https://apkpure.com";
+	static final private String BaseUrl = "https://www.coolapk.com";
 	static final private String Type = "APKPure";
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,26 +47,28 @@ public class UpdaterAPKPure
 			Document doc = Jsoup.connect(url).get();
 
 			// Search for URL ending on / + package name
-			Elements elements = doc.getElementsByAttributeValueEnding("href", "/" + mPname);
+			Elements elements = doc.getElementsByAttributeValue("href", "/apk/"+mPname);
 			if(elements == null || elements.size() == 0) {
 				return UpdaterStatus.STATUS_UPDATE_NOT_FOUND;
 			}
 
 			// Build new url to request
 			url = BaseUrl + elements.get(0).attr("href");
+
 			doc = Jsoup.connect(url).get();
 
 			// Try to get the version
 			//elements = doc.getElementsByAttributeValue("itemprop", "softwareVersion");
-			elements = doc.getElementsByClass("version-ul").get(0).getElementsByTag("p");
+			elements = doc.getElementsByClass("list_app_info");
 			if(elements == null || elements.size() == 0) {
 				return UpdaterStatus.STATUS_UPDATE_NOT_FOUND;
 			}
+			String version = elements.get(0).text();
 
 			// If version is old, report update
-			if (compareVersions(mCurrentVersion, elements.get(3).text()) == -1) {
+			if (compareVersions(mCurrentVersion, version) == -1) {
 				mResultUrl = url;
-				mResultVersion = elements.get(3).text();
+				mResultVersion = elements.get(0).text();
 				return UpdaterStatus.STATUS_UPDATE_FOUND;
 			}
 
